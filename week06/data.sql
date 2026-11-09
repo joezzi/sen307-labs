@@ -1,6 +1,13 @@
+-- =========================================================
+-- VUA-SEN307 Database Systems - Lab 4: DML (Insert, Update, Delete)
+-- Database: sen307_vugsen2412377
+-- =========================================================
+
 USE sen307_vugsen2412377;
 
--- 1. Reset tables safely to prevent duplicate entry errors
+-- ---------------------------------------------------------
+-- SETUP & SAFETY RESET
+-- ---------------------------------------------------------
 SET FOREIGN_KEY_CHECKS = 0;
 TRUNCATE TABLE CourseAllocation;
 TRUNCATE TABLE Enrolment;
@@ -8,8 +15,14 @@ TRUNCATE TABLE Course;
 TRUNCATE TABLE Student;
 TRUNCATE TABLE Lecturer;
 TRUNCATE TABLE Department;
+SET FOREIGN_KEY_CHECKS = 1;
 
--- 2. Insert Departments
+
+-- ---------------------------------------------------------
+-- PART 1: DEPARTMENTS AND COURSES
+-- ---------------------------------------------------------
+
+-- 1. Insert Departments[cite: 3]
 INSERT INTO Department (dept_name) VALUES
 ('Software Engineering'),
 ('Computer Science'),
@@ -17,7 +30,7 @@ INSERT INTO Department (dept_name) VALUES
 ('Data Science'),
 ('Cybersecurity');
 
--- 3. Insert Courses with subqueries for department IDs
+-- 2. Insert Courses[cite: 3]
 INSERT INTO Course (course_code, course_title, credit_units, description, dept_id) VALUES
 ('SEN307', 'Database Systems', 3,
 'Relational database design, SQL queries, normalization, transactions and indexing using MySQL.',
@@ -50,7 +63,14 @@ INSERT INTO Course (course_code, course_title, credit_units, description, dept_i
 'Firewalls, cryptography, intrusion detection and protecting networks from attacks.',
 (SELECT dept_id FROM Department WHERE dept_name = 'Cybersecurity'));
 
--- 4. Insert Lecturers (10 in total)
+
+-- ---------------------------------------------------------
+-- PART 2: LECTURERS, STUDENTS, ENROLS & ALLOCATIONS
+-- ---------------------------------------------------------
+
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- 1. Insert Lecturers (10 in total)[cite: 3]
 INSERT INTO Lecturer (staff_no, full_name, email, dept_id) VALUES
 ('VUA/ST/101', 'Dr Amaka Okafor', 'a.okafor@vua.edu.ng', (SELECT dept_id FROM Department WHERE dept_name = 'Software Engineering')),
 ('VUA/ST/102', 'Dr Musa Bello', 'm.bello@vua.edu.ng', (SELECT dept_id FROM Department WHERE dept_name = 'Software Engineering')),
@@ -63,7 +83,7 @@ INSERT INTO Lecturer (staff_no, full_name, email, dept_id) VALUES
 ('VUA/ST/109', 'Dr Yakubu Ahmed', 'y.ahmed@vua.edu.ng', (SELECT dept_id FROM Department WHERE dept_name = 'Cybersecurity')),
 ('VUA/ST/110', 'Dr Grace Okon', 'g.okon@vua.edu.ng', (SELECT dept_id FROM Department WHERE dept_name = 'Cybersecurity'));
 
--- 5. Insert Students (20 in total, including your matric number)
+-- 2. Insert Students (20 in total, including your matric number)[cite: 3]
 INSERT INTO Student (matric_no, full_name, gender, date_of_birth, dept_id) VALUES
 ('VUG/SEN/24/12377', 'Student User', 'M', '2004-05-12', (SELECT dept_id FROM Department WHERE dept_name = 'Software Engineering')),
 ('VUG/SEN/24/1002', 'Ada Obi', 'F', '2005-03-14', (SELECT dept_id FROM Department WHERE dept_name = 'Software Engineering')),
@@ -86,7 +106,7 @@ INSERT INTO Student (matric_no, full_name, gender, date_of_birth, dept_id) VALUE
 ('VUG/CYB/24/1019', 'Usman Danfodio', 'M', '2004-09-09', (SELECT dept_id FROM Department WHERE dept_name = 'Cybersecurity')),
 ('VUG/CYB/24/1020', 'Chiamaka Igwe', 'F', '2005-12-28', (SELECT dept_id FROM Department WHERE dept_name = 'Cybersecurity'));
 
--- 6. Insert Enrolments (40 rows)
+-- 3. Insert Enrolments (40 rows)[cite: 4]
 INSERT INTO Enrolment (student_id, course_id) VALUES
 (1, 1), (2, 1), (3, 1), (4, 1), (5, 1), (6, 1), (7, 1),
 (1, 2), (2, 2), (3, 3), (4, 4), (5, 5), (6, 6), (7, 8), (8, 9), (9, 10), (10, 10),
@@ -94,7 +114,7 @@ INSERT INTO Enrolment (student_id, course_id) VALUES
 (16, 5), (16, 7), (17, 8), (17, 9), (18, 8), (18, 9), (1, 3), (2, 4), (3, 2), (4, 5),
 (5, 6), (6, 7), (7, 10);
 
--- 7. Insert Course Allocations (10 allocations)
+-- 4. Insert Course Allocations (10 allocations)[cite: 4]
 INSERT INTO CourseAllocation (course_id, lecturer_id) VALUES
 (1, 1), (1, 2), 
 (2, 2),
@@ -106,10 +126,53 @@ INSERT INTO CourseAllocation (course_id, lecturer_id) VALUES
 (8, 7),
 (9, 8);
 
--- Re-enable foreign key checks
 SET FOREIGN_KEY_CHECKS = 1;
 
--- 8. Verification Query (Should show 5 departments with their respective course counts)
-SELECT d.dept_name, COUNT(c.course_id) AS courses
-FROM Department d LEFT JOIN Course c ON d.dept_id = c.dept_id
-GROUP BY d.dept_name;
+
+-- ---------------------------------------------------------
+-- PART 3: UPDATE A RECORD
+-- ---------------------------------------------------------
+
+SELECT matric_no, full_name, dept_id FROM Student WHERE matric_no = 'VUG/SEN/24/12377';
+
+SET SQL_SAFE_UPDATES = 0;
+UPDATE Student SET dept_id = 2 WHERE matric_no = 'VUG/SEN/24/12377';
+SET SQL_SAFE_UPDATES = 1;
+
+SELECT matric_no, full_name, dept_id FROM Student WHERE matric_no = 'VUG/SEN/24/12377';
+
+
+-- ---------------------------------------------------------
+-- PART 4: REFERENTIAL INTEGRITY (DELETE EXERCISE)
+-- ---------------------------------------------------------
+
+-- 1. Create a test department and a student in it[cite: 4]
+INSERT INTO Department (dept_name) VALUES ('Library and Information Science');
+
+INSERT INTO Student (matric_no, full_name, gender, date_of_birth, dept_id)
+VALUES ('20239999', 'Transfer Student', 'M', '2005-01-01',
+(SELECT dept_id FROM Department WHERE dept_name = 'Library and Information Science'));
+
+-- 2. Attempt delete (Triggers Error 1451 - uncomment to capture screenshot)[cite: 4]
+-- DELETE FROM Department WHERE dept_name = 'Library and Information Science';
+
+-- 3. Fix the constraint violation by reassigning the student first[cite: 4]
+SET SQL_SAFE_UPDATES = 0;
+UPDATE Student
+SET dept_id = (SELECT dept_id FROM Department WHERE dept_name = 'Software Engineering')
+WHERE matric_no = '20239999';
+SET SQL_SAFE_UPDATES = 1;
+
+-- 4. Successful delete of the parent row[cite: 4]
+DELETE FROM Department WHERE dept_name = 'Library and Information Science';
+
+
+-- ---------------------------------------------------------
+-- FINAL ROW COUNTS VERIFICATION
+-- ---------------------------------------------------------
+SELECT 'Departments' AS tbl, COUNT(*) AS total FROM Department
+UNION ALL SELECT 'Lecturers', COUNT(*) FROM Lecturer
+UNION ALL SELECT 'Students', COUNT(*) FROM Student
+UNION ALL SELECT 'Courses', COUNT(*) FROM Course
+UNION ALL SELECT 'Enrolments', COUNT(*) FROM Enrolment
+UNION ALL SELECT 'Allocations', COUNT(*) FROM CourseAllocation;
