@@ -1,5 +1,5 @@
 -- 1. Select your database
-USE sen307_vugsen2412377;
+USE sen307_vug_sen_24_12377;
 
 -- 2. Drop existing tables safely in reverse order of dependencies before re-creating them
 DROP TABLE IF EXISTS CourseAllocation;

@@ -1,0 +1,5 @@
+# VUG-SEN-24-12377 NWABUA JOSEPH CHIAGOZIEM
+
+# Lab 4 Write-up: Referential Integrity & DML Operations
+
+In Part 4, attempting to delete the temporary department while a student was still assigned to it triggered **Error 1451** (`Cannot delete or update a parent row: a foreign key constraint fails`). MySQL refused the `DELETE` statement because removing the parent row would create orphaned child records in the `Student` table, violating foreign key referential integrity. We fixed this issue by first updating the student's `dept_id` to reassign them to the Software Engineering department, after which the parent department deletion succeeded cleanly. Alternatively, we could have resolved this by either deleting the dependent student record prior to removing the department, or by configuring the table's foreign key constraint with `ON DELETE CASCADE` or `ON DELETE SET NULL` to handle dependent child rows automatically upon parent deletion.
